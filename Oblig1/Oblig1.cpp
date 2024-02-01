@@ -123,8 +123,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static POINT position = { 550,400 }; 
-    static POINT direction{ 1, 1 };
+    static POINT position = { 500,500 }; 
+    static int state = 0;
+    static int top = 165;
+    static int bottom = top + 50;
+    static int left = 150;
+    static int right = left-150;
+    
+    static HBRUSH topBrush = CreateSolidBrush(RGB(255, 0, 0));
+    static HBRUSH middleBrush = CreateSolidBrush(RGB(128, 128, 128));
+    static HBRUSH bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
 
     switch (message)
     {
@@ -148,33 +156,106 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         SetTimer(hWnd, 0, 100, 0);
         break;
-    case WM_PAINT:
+    case WM_PAINT: 
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            //Create first brush
-            HBRUSH brush = CreateSolidBrush(RGB(1, 1, 1));
-            HGDIOBJ hOrg = SelectObject(hdc, brush);
-            //Black rectangle background
-            Rectangle(hdc,position.x - 150, position.y - 330,position.x + 20, position.y +  20);
-            //Reset brush
-            SelectObject(hdc, hOrg);
-            DeleteObject(brush);
-            //Create new brush
-            HBRUSH brushGrey = CreateSolidBrush(RGB(128,128,128));
-            HGDIOBJ hOrgGrey = SelectObject(hdc, brushGrey);
-            //Grey circles inside the black rectangle
-            Ellipse(hdc, position.x - 110, position.y - 90, position.x -15, position.y + 10);
-            Ellipse(hdc, position.x - 110, position.y - 200, position.x - 15, position.y - 100);
-            Ellipse(hdc, position.x - 110, position.y - 310, position.x -15, position.y - 210);
 
-            SelectObject(hdc, hOrgGrey);
-            DeleteObject(brushGrey);
+
+            //Create black brush
+            HBRUSH blackBrush = CreateSolidBrush(RGB(1, 1, 1));
+            HGDIOBJ hOrg = SelectObject(hdc, blackBrush); // Ikke lage flere instanser av denne. Det skal bare være en orignal
+
+            //TRAFIKKLYS HORISONTAL
+
+            //Black rectangle background
+            Rectangle(hdc, position.x - left, position.y - top, position.x - right, position.y - bottom);
+            SelectObject(hdc, topBrush); 
+            //Grey circles inside the black rectangle
+            Ellipse(hdc, position.x -left +100, position.y - top, position.x - right -0, position.y - bottom);
+            SelectObject(hdc, middleBrush);
+            Ellipse(hdc, position.x - left + 50, position.y - top, position.x - 50, position.y - bottom);
+            SelectObject(hdc, bottomBrush);
+            Ellipse(hdc, position.x - left - 0, position.y - top, position.x - 100, position.y - bottom);
+
+            //TRAFIKKLYS VERTIKAL
+
+            //Black rectangle background
+            SelectObject(hdc,blackBrush);
+            Rectangle(hdc, position.x - left +100, position.y - top - 250, position.x - right, position.y - bottom - 50);
+            //Grey circles inside the black rectangle
+            SelectObject(hdc, topBrush);
+            Ellipse(hdc, position.x - left + 100, position.y - top - 250, position.x - right , position.y - bottom - 150);
+            SelectObject(hdc, middleBrush);
+            Ellipse(hdc, position.x - left + 100 , position.y - top-200, position.x - right, position.y - bottom - 100);
+            SelectObject(hdc, bottomBrush);
+            Ellipse(hdc, position.x - left + 100, position.y - top - 150, position.x - right, position.y - bottom - 50);
+
+            //Drawing the road
+            HBRUSH greyBrush = CreateSolidBrush(RGB(200, 200, 200));
+            SelectObject(hdc, greyBrush);
+            //Horisontal
+            Rectangle(hdc, position.x + 600, position.y - 270, position.x - 600, position.y - 220);
+            //Vertikal
+            Rectangle(hdc, position.x + 50, position.y +600, position.x + 0, position.y - 600);
+            
+           
+
+            //Delete brushes to stop memory leak
+            SelectObject(hdc, hOrg);
+            DeleteObject(blackBrush);
+            DeleteObject(topBrush);
+            DeleteObject(middleBrush);
+            DeleteObject(bottomBrush);
             EndPaint(hWnd, &ps);
             
         }
         break;
-   
+
+    case WM_LBUTTONDOWN:
+    {
+        switch (state)
+        {
+
+        case 0:
+        {
+            topBrush = CreateSolidBrush(RGB(255, 0, 0));
+            middleBrush = CreateSolidBrush(RGB(255, 255, 0));
+            bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        }
+        break;
+        case 1:
+        {
+            topBrush = CreateSolidBrush(RGB(128, 128, 128));
+            middleBrush = CreateSolidBrush(RGB(128,128,128));
+            bottomBrush = CreateSolidBrush(RGB(0, 255, 0));
+
+        }
+        break;
+        case 2:
+        {
+            topBrush = CreateSolidBrush(RGB(128, 128, 128));
+            middleBrush = CreateSolidBrush(RGB(255, 255, 0));
+            bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        }
+        break;
+        case 3:
+        {
+            topBrush = CreateSolidBrush(RGB(255, 0, 0));
+            middleBrush = CreateSolidBrush(RGB(128, 128, 128));
+            bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+            state = -1;
+        }
+        break;
+
+        default:
+            break;
+        }
+       
+        state++;
+        InvalidateRect(hWnd,0,true);
+    }
+    break;
     
     case WM_DESTROY:
         PostQuitMessage(0);
