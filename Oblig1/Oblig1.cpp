@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "Oblig1.h"
+#define ID_TIMER_TRAFFIC_LIGHT 1
 
 #define MAX_LOADSTRING 100
 
@@ -154,7 +155,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_CREATE:
-        SetTimer(hWnd, 0, 100, 0);
+        SetTimer(hWnd, ID_TIMER_TRAFFIC_LIGHT, 2000, NULL);
         break;
     case WM_PAINT: 
         {
@@ -212,6 +213,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+
     case WM_LBUTTONDOWN:
     {
         switch (state)
@@ -256,6 +258,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         InvalidateRect(hWnd,0,true);
     }
     break;
+
+    case WM_TIMER:
+    {
+        if (wParam == ID_TIMER_TRAFFIC_LIGHT) {
+            // Code to change traffic light colors
+            switch (state)
+            {
+            case 0:
+                // Change colors based on the current state
+                topBrush = CreateSolidBrush(RGB(255, 0, 0));
+                middleBrush = CreateSolidBrush(RGB(255, 255, 0));
+                bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+                break;
+            case 1:
+                topBrush = CreateSolidBrush(RGB(128, 128, 128));
+                middleBrush = CreateSolidBrush(RGB(128, 128, 128));
+                bottomBrush = CreateSolidBrush(RGB(0, 255, 0));
+                break;
+            case 2:
+                topBrush = CreateSolidBrush(RGB(128, 128, 128));
+                middleBrush = CreateSolidBrush(RGB(255, 255, 0));
+                bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+                break;
+            case 3:
+                topBrush = CreateSolidBrush(RGB(255, 0, 0));
+                middleBrush = CreateSolidBrush(RGB(128, 128, 128));
+                bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+                state = -1;
+                break;
+            default:
+                break;
+            }
+            state++;
+            InvalidateRect(hWnd, 0, true); 
+        }
+        break;
+    }
     
     case WM_DESTROY:
         PostQuitMessage(0);
