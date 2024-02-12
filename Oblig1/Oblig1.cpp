@@ -161,53 +161,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
+            RECT size;
+            GetClientRect(hWnd, &size);
 
 
-            //Create black brush
-            HBRUSH blackBrush = CreateSolidBrush(RGB(1, 1, 1));
-            HGDIOBJ hOrg = SelectObject(hdc, blackBrush); // Ikke lage flere instanser av denne. Det skal bare være en orignal
-
-            //TRAFIKKLYS HORISONTAL
-
-            //Black rectangle background
-            Rectangle(hdc, position.x - left, position.y - top, position.x - right, position.y - bottom);
-            SelectObject(hdc, topBrush); 
-            //Grey circles inside the black rectangle
-            Ellipse(hdc, position.x -left +100, position.y - top, position.x - right -0, position.y - bottom);
-            SelectObject(hdc, middleBrush);
-            Ellipse(hdc, position.x - left + 50, position.y - top, position.x - 50, position.y - bottom);
-            SelectObject(hdc, bottomBrush);
-            Ellipse(hdc, position.x - left - 0, position.y - top, position.x - 100, position.y - bottom);
-
-            //TRAFIKKLYS VERTIKAL
-
-            //Black rectangle background
-            SelectObject(hdc,blackBrush);
-            Rectangle(hdc, position.x - left +100, position.y - top - 250, position.x - right, position.y - bottom - 50);
-            //Grey circles inside the black rectangle
-            SelectObject(hdc, topBrush);
-            Ellipse(hdc, position.x - left + 100, position.y - top - 250, position.x - right , position.y - bottom - 150);
-            SelectObject(hdc, middleBrush);
-            Ellipse(hdc, position.x - left + 100 , position.y - top-200, position.x - right, position.y - bottom - 100);
-            SelectObject(hdc, bottomBrush);
-            Ellipse(hdc, position.x - left + 100, position.y - top - 150, position.x - right, position.y - bottom - 50);
+            //Drawing background
+            HBRUSH greyBrush = CreateSolidBrush(RGB(128, 128, 128));
+           
+                SelectObject(hdc, greyBrush);
+                Rectangle(hdc, size.left, size.top, size.right, size.bottom);
 
             //Drawing the road
-            HBRUSH greyBrush = CreateSolidBrush(RGB(200, 200, 200));
-            SelectObject(hdc, greyBrush);
-            //Horisontal
-            Rectangle(hdc, position.x + 600, position.y - 270, position.x - 600, position.y - 220);
-            //Vertikal
-            Rectangle(hdc, position.x + 50, position.y +600, position.x + 0, position.y - 600);
+            HBRUSH whiteBrush = CreateSolidBrush(RGB(255, 255, 255));
+            SelectObject(hdc, whiteBrush);
+            //BOTTOM
+            Rectangle(hdc, 550, 285, size.right, size.bottom);
+            Rectangle(hdc, size.left, 285, 500, size.bottom);
+
+            //TOP
+            Rectangle(hdc, 550, size.top, size.right, 235);
+            Rectangle(hdc, size.left, size.top, 500, 235);
+
+
+           
+            tegnTrafikklys(hdc, hWnd,position,topBrush,middleBrush,bottomBrush);
+
+          
+
+
+            //CAR
+            HBRUSH carBrush = CreateSolidBrush(RGB(0, 0, 255));
+            SelectObject(hdc, carBrush);
+            Rectangle(hdc, position.x+10,position.y-500,position.x+20,position.y-480);
+
             
            
 
             //Delete brushes to stop memory leak
-            SelectObject(hdc, hOrg);
-            DeleteObject(blackBrush);
+           
             DeleteObject(topBrush);
             DeleteObject(middleBrush);
             DeleteObject(bottomBrush);
+            DeleteObject(carBrush);
             EndPaint(hWnd, &ps);
             
         }
@@ -216,48 +211,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_LBUTTONDOWN:
     {
-        switch (state)
-        {
 
-        case 0:
-        {
-            topBrush = CreateSolidBrush(RGB(255, 0, 0));
-            middleBrush = CreateSolidBrush(RGB(255, 255, 0));
-            bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
-        }
-        break;
-        case 1:
-        {
-            topBrush = CreateSolidBrush(RGB(128, 128, 128));
-            middleBrush = CreateSolidBrush(RGB(128,128,128));
-            bottomBrush = CreateSolidBrush(RGB(0, 255, 0));
-
-        }
-        break;
-        case 2:
-        {
-            topBrush = CreateSolidBrush(RGB(128, 128, 128));
-            middleBrush = CreateSolidBrush(RGB(255, 255, 0));
-            bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
-        }
-        break;
-        case 3:
-        {
-            topBrush = CreateSolidBrush(RGB(255, 0, 0));
-            middleBrush = CreateSolidBrush(RGB(128, 128, 128));
-            bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
-            state = -1;
-        }
-        break;
-
-        default:
-            break;
-        }
+    
        
-        state++;
-        InvalidateRect(hWnd,0,true);
+      
     }
     break;
+
+    case WM_RBUTTONDOWN:
+    {
+
+
+
+    }
 
     case WM_TIMER:
     {
@@ -323,4 +289,49 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+void tegnTrafikklys(HDC hdc, HWND hWnd,POINT position,HBRUSH topBrush,HBRUSH middleBrush,HBRUSH bottomBrush) {
+
+
+    RECT size;
+    GetClientRect(hWnd, &size);
+     int left = 150;
+     int right = left - 150;
+     int top = 165;
+     int bottom = top + 50;
+
+
+     HBRUSH blackBrush = CreateSolidBrush(RGB(1, 1, 1));
+     HGDIOBJ hOrg = SelectObject(hdc,blackBrush);
+
+
+    //TRAFIKKLYS HORISONTAL
+
+    //Black rectangle background
+    Rectangle(hdc, position.x - left, position.y - top, position.x - right, position.y - bottom);
+    SelectObject(hdc, topBrush);
+    //Grey circles inside the black rectangle
+    Ellipse(hdc, position.x - left + 100, position.y - top, position.x - right - 0, position.y - bottom);
+    SelectObject(hdc, middleBrush);
+    Ellipse(hdc, position.x - left + 50, position.y - top, position.x - 50, position.y - bottom);
+    SelectObject(hdc, bottomBrush);
+    Ellipse(hdc, position.x - left - 0, position.y - top, position.x - 100, position.y - bottom);
+
+    //TRAFIKKLYS VERTIKAL
+
+    //Black rectangle background
+    SelectObject(hdc, blackBrush);
+    Rectangle(hdc, position.x - left + 100, position.y - top - 250, position.x - right, position.y - bottom - 50);
+    //Grey circles inside the black rectangle
+    SelectObject(hdc, topBrush);
+    Ellipse(hdc, position.x - left + 100, position.y - top - 250, position.x - right, position.y - bottom - 150);
+    SelectObject(hdc, middleBrush);
+    Ellipse(hdc, position.x - left + 100, position.y - top - 200, position.x - right, position.y - bottom - 100);
+    SelectObject(hdc, bottomBrush);
+    Ellipse(hdc, position.x - left + 100, position.y - top - 150, position.x - right, position.y - bottom - 50);
+
+
+    SelectObject(hdc, hOrg);
+    DeleteObject(blackBrush);
 }
