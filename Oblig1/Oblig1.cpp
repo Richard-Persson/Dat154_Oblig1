@@ -3,7 +3,11 @@
 
 #include "framework.h"
 #include "Oblig1.h"
-#define ID_TIMER_TRAFFIC_LIGHT 1
+
+
+static HBRUSH topBrush = NULL;
+static HBRUSH middleBrush = NULL;
+static HBRUSH bottomBrush = NULL;
 
 #define MAX_LOADSTRING 100
 
@@ -124,152 +128,140 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static POINT position = { 500,500 }; 
+    static POINT position = { 500,500 };
     static int state = 0;
-    static int top = 165;
-    static int bottom = top + 50;
-    static int left = 150;
-    static int right = left-150;
-    
-    static HBRUSH topBrush = CreateSolidBrush(RGB(255, 0, 0));
-    static HBRUSH middleBrush = CreateSolidBrush(RGB(128, 128, 128));
-    static HBRUSH bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+    static POINT carPositionVertical = { 500,500 };
+    static POINT carPositionHorisontal = { 0,500};
+
 
     switch (message)
     {
     case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_CREATE:
-        SetTimer(hWnd, ID_TIMER_TRAFFIC_LIGHT, 2000, NULL);
-        break;
-    case WM_PAINT: 
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            RECT size;
-            GetClientRect(hWnd, &size);
-
-
-            //Drawing background
-            HBRUSH greyBrush = CreateSolidBrush(RGB(128, 128, 128));
-           
-                SelectObject(hdc, greyBrush);
-                Rectangle(hdc, size.left, size.top, size.right, size.bottom);
-
-            //Drawing the road
-            HBRUSH whiteBrush = CreateSolidBrush(RGB(255, 255, 255));
-            SelectObject(hdc, whiteBrush);
-            //BOTTOM
-            Rectangle(hdc, 550, 285, size.right, size.bottom);
-            Rectangle(hdc, size.left, 285, 500, size.bottom);
-
-            //TOP
-            Rectangle(hdc, 550, size.top, size.right, 235);
-            Rectangle(hdc, size.left, size.top, 500, 235);
-
-
-           
-            tegnTrafikklys(hdc, hWnd,position,topBrush,middleBrush,bottomBrush);
-
-          
-
-
-            //CAR
-            HBRUSH carBrush = CreateSolidBrush(RGB(0, 0, 255));
-            SelectObject(hdc, carBrush);
-            Rectangle(hdc, position.x+10,position.y-500,position.x+20,position.y-480);
-
-            
-           
-
-            //Delete brushes to stop memory leak
-           
-            DeleteObject(topBrush);
-            DeleteObject(middleBrush);
-            DeleteObject(bottomBrush);
-            DeleteObject(carBrush);
-            EndPaint(hWnd, &ps);
-            
-        }
-        break;
-
-
-    case WM_LBUTTONDOWN:
     {
+        int wmId = LOWORD(wParam);
+        // Parse the menu selections:
+        switch (wmId)
+        {
+        case IDM_ABOUT:
+            DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+            break;
+        case IDM_EXIT:
+            DestroyWindow(hWnd);
+            break;
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
+        }
+    }
+    break;
+    case WM_CREATE:
 
-    
-       
+        InitializeTrafficLightBrushes();
+        SetTimer(hWnd, ID_TIMER_TRAFFIC_LIGHT, 1000, NULL);
+        SetTimer(hWnd, ID_TIMER_TRAFFIC_LIGHT_2, 3000, NULL);
       
+        break;
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hWnd, &ps);
+        RECT size;
+        GetClientRect(hWnd, &size);
+
+
+        //Drawing background
+        HBRUSH greyBrush = CreateSolidBrush(RGB(128, 128, 128));
+
+        SelectObject(hdc, greyBrush);
+        Rectangle(hdc, size.left, size.top, size.right, size.bottom);
+
+        //Drawing the road
+        HBRUSH whiteBrush = CreateSolidBrush(RGB(255, 255, 255));
+        SelectObject(hdc, whiteBrush);
+        //BOTTOM
+        Rectangle(hdc, 550, 285, size.right, size.bottom);
+        Rectangle(hdc, size.left, 285, 500, size.bottom);
+
+        //TOP
+        Rectangle(hdc, 550, size.top, size.right, 235);
+        Rectangle(hdc, size.left, size.top, 500, 235);
+
+        tegnTrafikklys(hdc, hWnd, position, topBrush, middleBrush, bottomBrush);
+
+
+
+
+        //CAR
+        HBRUSH carBrush = CreateSolidBrush(RGB(0, 0, 255));
+        SelectObject(hdc, carBrush);
+        Rectangle(hdc, carPositionVertical.x + 10, carPositionVertical.y - 500, carPositionVertical.x + 20, carPositionVertical.y - 480);
+        Rectangle(hdc, size.left + carPositionHorisontal.x, carPositionHorisontal.y - 250, size.left+40 + carPositionHorisontal.x, carPositionHorisontal.y - 230);
+
+        //Delete brushes to stop memory leak
+        DeleteObject(whiteBrush);
+        DeleteObject(greyBrush);
+        DeleteObject(carBrush);
+        EndPaint(hWnd, &ps);
+
     }
     break;
 
+
+    case WM_LBUTTONDOWN:
+
+        carPositionVertical.x = 500;
+        carPositionVertical.y = 500;
+        SetTimer(hWnd, ID_TIMER_CAR_MOVEMENT, 100, NULL);
+        InvalidateRect(hWnd, NULL, TRUE); // Request a repaint
+        break;
+
+
     case WM_RBUTTONDOWN:
-    {
+        
+        
+        carPositionHorisontal.x = 0;
+        carPositionHorisontal.y = 500;
+ 
+        SetTimer(hWnd, ID_TIMER_CAR_MOVEMENT2, 100, NULL);
+        InvalidateRect(hWnd, NULL, TRUE); // Request a repaint
+        break;
 
-
-
-    }
+    
 
     case WM_TIMER:
     {
         if (wParam == ID_TIMER_TRAFFIC_LIGHT) {
-            // Code to change traffic light colors
-            switch (state)
-            {
-            case 0:
-                // Change colors based on the current state
-                topBrush = CreateSolidBrush(RGB(255, 0, 0));
-                middleBrush = CreateSolidBrush(RGB(255, 255, 0));
-                bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
-                break;
-            case 1:
-                topBrush = CreateSolidBrush(RGB(128, 128, 128));
-                middleBrush = CreateSolidBrush(RGB(128, 128, 128));
-                bottomBrush = CreateSolidBrush(RGB(0, 255, 0));
-                break;
-            case 2:
-                topBrush = CreateSolidBrush(RGB(128, 128, 128));
-                middleBrush = CreateSolidBrush(RGB(255, 255, 0));
-                bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
-                break;
-            case 3:
-                topBrush = CreateSolidBrush(RGB(255, 0, 0));
-                middleBrush = CreateSolidBrush(RGB(128, 128, 128));
-                bottomBrush = CreateSolidBrush(RGB(128, 128, 128));
-                state = -1;
-                break;
-            default:
-                break;
-            }
-            state++;
-            InvalidateRect(hWnd, 0, true); 
+            UpdateTrafficLightState(hWnd, 1);
         }
+
+        else if (wParam == ID_TIMER_TRAFFIC_LIGHT_2) {
+            UpdateTrafficLightState(hWnd, 2);
+        }
+
+        // Request the window to be redrawn to reflect the traffic light state change
+
+        else  if (wParam == ID_TIMER_CAR_MOVEMENT) {
+           
+            carPositionVertical.y += 5; 
+        }
+
+        else if (wParam == ID_TIMER_CAR_MOVEMENT2) {
+            carPositionHorisontal.x += 5;
+        }
+
+        InvalidateRect(hWnd, NULL, TRUE);
         break;
     }
-    
+
+
     case WM_DESTROY:
+        CleanupResources();
         PostQuitMessage(0);
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
-}
+   }
 
 // Message handler for about box.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -290,6 +282,95 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return (INT_PTR)FALSE;
 }
+
+void InitializeTrafficLightBrushes() {
+    if (!topBrush) topBrush = CreateSolidBrush(RGB(255, 0, 0)); // Red
+    if (!middleBrush) middleBrush = CreateSolidBrush(RGB(128, 128, 128)); // Gray
+    if (!bottomBrush) bottomBrush = CreateSolidBrush(RGB(128, 128, 128)); // Gray
+}
+
+
+void CleanupResources() {
+    if (topBrush) DeleteObject(topBrush);
+    if (middleBrush) DeleteObject(middleBrush);
+    if (bottomBrush) DeleteObject(bottomBrush);
+}
+
+void UpdateTrafficLightState(HWND hWnd, int trafficLightID) {
+    static int stateTrafficLight1 = 0;
+    static int stateTrafficLight2 = 0;
+    int* state = 0;
+    int durationRed, durationGreen, durationYellow;
+
+    // Determine which traffic light we're updating
+    if (trafficLightID == 1) {
+        state = &stateTrafficLight1;
+        durationRed = DURATION_RED_1;
+        durationGreen = DURATION_GREEN_1;
+        durationYellow = DURATION_YELLOW_1;
+    }
+    else { // trafficLightID == 2
+        state = &stateTrafficLight2;
+        durationRed = DURATION_RED_2;
+        durationGreen = DURATION_GREEN_2;
+        durationYellow = DURATION_YELLOW_2;
+    }
+
+    // Increment state and wrap around if necessary
+   
+
+    // Define the brushes for the traffic light based on the current state
+    HBRUSH newTopBrush, newMiddleBrush, newBottomBrush;
+
+    switch (*state) {
+    case 0: // Red
+        newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
+        newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        break;
+    case 1: // Yellow / Red
+        newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
+        newMiddleBrush = CreateSolidBrush(RGB(255, 255, 0));
+        newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        break;
+  
+    case 2: //Green
+        newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newBottomBrush = CreateSolidBrush(RGB(0, 255, 0));
+        break;
+
+    case 3: // Yellow
+        newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newMiddleBrush = CreateSolidBrush(RGB(255, 255, 0));
+        newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        break;
+
+    default: // Default to red
+        newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
+        newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        *state = 0;
+        break;
+    }
+
+    *state = *state + 1;
+
+    // Delete old brushes and update global brushes
+    if (topBrush) DeleteObject(topBrush);
+    if (middleBrush) DeleteObject(middleBrush);
+    if (bottomBrush) DeleteObject(bottomBrush);
+    topBrush = newTopBrush;
+    middleBrush = newMiddleBrush;
+    bottomBrush = newBottomBrush;
+
+    // Reset the timer for the next state with the duration based on the current state
+
+    // Invalidate the window to trigger a redraw with the new traffic light state
+    InvalidateRect(hWnd, NULL, TRUE);
+}
+
+
 
 void tegnTrafikklys(HDC hdc, HWND hWnd,POINT position,HBRUSH topBrush,HBRUSH middleBrush,HBRUSH bottomBrush) {
 
