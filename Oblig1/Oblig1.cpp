@@ -3,11 +3,17 @@
 
 #include "framework.h"
 #include "Oblig1.h"
+#include <vector>
 
 
 static HBRUSH topBrush = NULL;
 static HBRUSH middleBrush = NULL;
 static HBRUSH bottomBrush = NULL;
+
+struct Car {
+    POINT positionCar;
+    bool inMove;
+};
 
 #define MAX_LOADSTRING 100
 
@@ -15,6 +21,11 @@ static HBRUSH bottomBrush = NULL;
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+
+static POINT position = { 500,500 };
+int state = 0;
+std::vector<Car> carsWest, carsNorth;
+
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -128,11 +139,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    static POINT position = { 500,500 };
-    static int state = 0;
-    static POINT carPositionVertical = { 500,500 };
-    static POINT carPositionHorisontal = { 0,500};
-
 
     switch (message)
     {
@@ -193,8 +199,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //CAR
         HBRUSH carBrush = CreateSolidBrush(RGB(0, 0, 255));
         SelectObject(hdc, carBrush);
-        Rectangle(hdc, carPositionVertical.x + 10, carPositionVertical.y - 500, carPositionVertical.x + 20, carPositionVertical.y - 480);
-        Rectangle(hdc, size.left + carPositionHorisontal.x, carPositionHorisontal.y - 250, size.left+40 + carPositionHorisontal.x, carPositionHorisontal.y - 230);
+        for (const auto& Car : carsWest) {
+            Rectangle(hdc, Car.positionCar.x + 10, Car.positionCar.y + 10, Car.positionCar.x - 10, Car.positionCar.y - 10);
+        };
+
+        for (const auto& Car : carsNorth) {
+            Rectangle(hdc, Car.positionCar.x - 10, Car.positionCar.y - 10, Car.positionCar.x + 10, Car.positionCar.y + 10);
+        };
 
         //Delete brushes to stop memory leak
         DeleteObject(whiteBrush);
@@ -206,29 +217,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     break;
 
 
-    case WM_LBUTTONDOWN:
-
-        carPositionVertical.x = 500;
-        carPositionVertical.y = 500;
+    case WM_LBUTTONDOWN: {
+        //carPositionVertical.x = ;
+        //carPositionVertical.y = 500;
+        Car newCarWest = { {0,260}, true };
+        carsWest.push_back(newCarWest);
         SetTimer(hWnd, ID_TIMER_CAR_MOVEMENT, 100, NULL);
         InvalidateRect(hWnd, NULL, TRUE); // Request a repaint
-        break;
+        break; }
 
 
-    case WM_RBUTTONDOWN:
-        
-        
-        carPositionHorisontal.x = 0;
-        carPositionHorisontal.y = 500;
- 
+    case WM_RBUTTONDOWN: {
+        //carPositionHorisontal.x = 0;
+        //carPositionHorisontal.y = 500;
+        Car newCarNorth = { {525,10}, true };
+        carsNorth.push_back(newCarNorth); 
         SetTimer(hWnd, ID_TIMER_CAR_MOVEMENT2, 100, NULL);
         InvalidateRect(hWnd, NULL, TRUE); // Request a repaint
-        break;
-
-    
+        break; }
 
     case WM_TIMER:
-    {
+    { void UpdateCarPositions(std::vector<Car>&cars, int direction);
         if (wParam == ID_TIMER_TRAFFIC_LIGHT) {
             UpdateTrafficLightState(hWnd, 1);
         }
@@ -240,13 +249,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         // Request the window to be redrawn to reflect the traffic light state change
 
         else  if (wParam == ID_TIMER_CAR_MOVEMENT) {
-           
-            carPositionVertical.y += 5; 
+            UpdateCarPositions(carsWest, 0);  
+        //    carPositionVertical.y += 5; 
         }
 
         else if (wParam == ID_TIMER_CAR_MOVEMENT2) {
-            carPositionHorisontal.x += 5;
-        }
+            UpdateCarPositions(carsNorth, 1);
+        //    carPositionHorisontal.x += 5;
+       }
+
 
         InvalidateRect(hWnd, NULL, TRUE);
         break;
@@ -262,6 +273,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return 0;
    }
+
+void UpdateCarPositions(std::vector<Car>& cars, int direction) {
+    for (auto& Car : cars) {
+        if (Car.inMove) {
+            if (direction == 0) { 
+                Car.positionCar.x += 5;
+            }
+            else { 
+                Car.positionCar.y += 5;
+            }
+        }
+    }
+}
 
 // Message handler for about box.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -283,9 +307,11 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return (INT_PTR)FALSE;
 }
 
+
+
 void InitializeTrafficLightBrushes() {
     if (!topBrush) topBrush = CreateSolidBrush(RGB(255, 0, 0)); // Red
-    if (!middleBrush) middleBrush = CreateSolidBrush(RGB(128, 128, 128)); // Gray
+    if (!middleBrush) middleBrush = CreateSolidBrush(RGB(128, 128, 128))    ; // Gray
     if (!bottomBrush) bottomBrush = CreateSolidBrush(RGB(128, 128, 128)); // Gray
 }
 
