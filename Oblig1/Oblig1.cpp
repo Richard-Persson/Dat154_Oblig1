@@ -9,11 +9,13 @@
 static HBRUSH topBrush1 = NULL;
 static HBRUSH middleBrush1 = NULL;
 static HBRUSH bottomBrush1 = NULL;
+static BOOLEAN stopp1 = false;
 
 //TRAFIKKLYS 2
 static HBRUSH topBrush2 = NULL;
 static HBRUSH middleBrush2 = NULL;
 static HBRUSH bottomBrush2 = NULL;
+static BOOLEAN stopp2 = false;
 
 struct Car {
     POINT positionCar;
@@ -344,6 +346,7 @@ void UpdateTrafficLightState2(HWND hWnd) {
         newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        stopp2 = false;
         break;
     case 3: // Yellow / Red
         newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
@@ -355,6 +358,7 @@ void UpdateTrafficLightState2(HWND hWnd) {
         newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(0, 255, 0));
+        stopp2 = true;
         break;
 
     case 1: // Yellow
@@ -363,11 +367,12 @@ void UpdateTrafficLightState2(HWND hWnd) {
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
         break;
 
-    default: // Default to red
+    default: // Default to green
         newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(0, 255, 0));
         *state = 0;
+        stopp2 = true;
         break;
     }
 
@@ -411,6 +416,7 @@ void UpdateTrafficLightState1(HWND hWnd) {
         newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        stopp1 = false;
         break;
     case 1: // Yellow / Red
         newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
@@ -422,6 +428,7 @@ void UpdateTrafficLightState1(HWND hWnd) {
         newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(0, 255, 0));
+        stopp1 = true;
         break;
 
     case 3: // Yellow
@@ -435,6 +442,7 @@ void UpdateTrafficLightState1(HWND hWnd) {
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
         *state = 0;
+        stopp1 = false;
         break;
     }
 
@@ -503,9 +511,19 @@ void UpdateCarPositions(std::vector<Car>& cars, int direction) {
     for (auto& Car : cars) {
         if (Car.inMove) {
             if (direction == 0) {
-                Car.positionCar.x += 10;
+
+                if (!stopp1 && Car.positionCar.x <500) 
+                    Car.positionCar.x == Car.positionCar.x;
+                
+                else 
+                    Car.positionCar.x += 10;
+                
+
             }
             else {
+                if (!stopp2 && Car.positionCar.y < 225)
+                    Car.positionCar.y == Car.positionCar.y;
+                else
                 Car.positionCar.y += 10;
             }
         }
