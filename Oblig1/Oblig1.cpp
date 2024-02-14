@@ -5,10 +5,15 @@
 #include "Oblig1.h"
 #include <vector>
 
+//TRAFIKKLYS 1
+static HBRUSH topBrush1 = NULL;
+static HBRUSH middleBrush1 = NULL;
+static HBRUSH bottomBrush1 = NULL;
 
-static HBRUSH topBrush = NULL;
-static HBRUSH middleBrush = NULL;
-static HBRUSH bottomBrush = NULL;
+//TRAFIKKLYS 2
+static HBRUSH topBrush2 = NULL;
+static HBRUSH middleBrush2 = NULL;
+static HBRUSH bottomBrush2 = NULL;
 
 struct Car {
     POINT positionCar;
@@ -162,8 +167,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
 
         InitializeTrafficLightBrushes();
-        SetTimer(hWnd, ID_TIMER_TRAFFIC_LIGHT, 1000, NULL);
-        SetTimer(hWnd, ID_TIMER_TRAFFIC_LIGHT_2, 3000, NULL);
+        SetTimer(hWnd, ID_TIMER_TRAFFIC_LIGHT, 2000, NULL);
       
         break;
     case WM_PAINT:
@@ -191,7 +195,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         Rectangle(hdc, 550, size.top, size.right, 235);
         Rectangle(hdc, size.left, size.top, 500, 235);
 
-        tegnTrafikklys(hdc, hWnd, position, topBrush, middleBrush, bottomBrush);
+        tegnTrafikklys(hdc, hWnd, position, topBrush1, middleBrush1, bottomBrush1, topBrush2, middleBrush2, bottomBrush2);
 
 
 
@@ -237,18 +241,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break; }
 
     case WM_TIMER:
-    { void UpdateCarPositions(std::vector<Car>&cars, int direction);
+    {
         if (wParam == ID_TIMER_TRAFFIC_LIGHT) {
-            UpdateTrafficLightState(hWnd, 1);
+            UpdateTrafficLightState1(hWnd);
+            UpdateTrafficLightState2(hWnd);
         }
-
-        else if (wParam == ID_TIMER_TRAFFIC_LIGHT_2) {
-            UpdateTrafficLightState(hWnd, 2);
-        }
-
         // Request the window to be redrawn to reflect the traffic light state change
-
-        else  if (wParam == ID_TIMER_CAR_MOVEMENT) {
+        void UpdateCarPositions(std::vector<Car>&cars, int direction);
+        if (wParam == ID_TIMER_CAR_MOVEMENT) {
             UpdateCarPositions(carsWest, 0);  
         //    carPositionVertical.y += 5; 
         }
@@ -274,18 +274,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
    }
 
-void UpdateCarPositions(std::vector<Car>& cars, int direction) {
-    for (auto& Car : cars) {
-        if (Car.inMove) {
-            if (direction == 0) { 
-                Car.positionCar.x += 5;
-            }
-            else { 
-                Car.positionCar.y += 5;
-            }
-        }
-    }
-}
+
 
 // Message handler for about box.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -310,41 +299,110 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 void InitializeTrafficLightBrushes() {
-    if (!topBrush) topBrush = CreateSolidBrush(RGB(255, 0, 0)); // Red
-    if (!middleBrush) middleBrush = CreateSolidBrush(RGB(128, 128, 128))    ; // Gray
-    if (!bottomBrush) bottomBrush = CreateSolidBrush(RGB(128, 128, 128)); // Gray
+    if (!topBrush1) topBrush1 = CreateSolidBrush(RGB(255, 0, 0)); // Red
+    if (!middleBrush1) middleBrush1 = CreateSolidBrush(RGB(128, 128, 128))    ; // Gray
+    if (!bottomBrush1) bottomBrush1 = CreateSolidBrush(RGB(128, 128, 128)); // Gray
+
+    if (!topBrush2) topBrush2 = CreateSolidBrush(RGB(128, 128, 128)); // Gray
+    if (!middleBrush2) middleBrush2 = CreateSolidBrush(RGB(128, 128, 128)); // Gray
+    if (!bottomBrush2) bottomBrush2 = CreateSolidBrush(RGB(0, 255, 0)); // Green
 }
 
 
 void CleanupResources() {
-    if (topBrush) DeleteObject(topBrush);
-    if (middleBrush) DeleteObject(middleBrush);
-    if (bottomBrush) DeleteObject(bottomBrush);
+    DeleteObject(topBrush1);
+    DeleteObject(middleBrush1);
+    DeleteObject(bottomBrush1);
+    DeleteObject(topBrush2);
+    DeleteObject(middleBrush2);
+    DeleteObject(bottomBrush2);
 }
 
-void UpdateTrafficLightState(HWND hWnd, int trafficLightID) {
+void UpdateTrafficLightState2(HWND hWnd) {
     static int stateTrafficLight1 = 0;
     static int stateTrafficLight2 = 0;
     int* state = 0;
     int durationRed, durationGreen, durationYellow;
 
     // Determine which traffic light we're updating
-    if (trafficLightID == 1) {
+
+    state = &stateTrafficLight2;
+    durationRed = DURATION_RED_2;
+    durationGreen = DURATION_GREEN_2;
+    durationYellow = DURATION_YELLOW_2;
+
+
+
+
+    // Increment state and wrap around if necessary
+
+    // Define the brushes for the traffic light based on the current state
+    HBRUSH newTopBrush, newMiddleBrush, newBottomBrush;
+
+    switch (*state) {
+    case 2: // Red
+        newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
+        newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        break;
+    case 3: // Yellow / Red
+        newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
+        newMiddleBrush = CreateSolidBrush(RGB(255, 255, 0));
+        newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        break;
+
+    case 0: //Green
+        newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newBottomBrush = CreateSolidBrush(RGB(0, 255, 0));
+        break;
+
+    case 1: // Yellow
+        newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newMiddleBrush = CreateSolidBrush(RGB(255, 255, 0));
+        newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
+        break;
+
+    default: // Default to red
+        newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
+        newBottomBrush = CreateSolidBrush(RGB(0, 255, 0));
+        *state = 0;
+        break;
+    }
+
+    *state = *state + 1;
+
+    // Delete old brushes and update global brushes
+    topBrush2 = newTopBrush;
+    middleBrush2 = newMiddleBrush;
+    bottomBrush2 = newBottomBrush;
+
+
+    // Reset the timer for the next state with the duration based on the current state
+
+    // Invalidate the window to trigger a redraw with the new traffic light state
+    InvalidateRect(hWnd, NULL, TRUE);
+}
+
+void UpdateTrafficLightState1(HWND hWnd) {
+    static int stateTrafficLight1 = 0;
+    static int stateTrafficLight2 = 0;
+    int* state = 0;
+    int durationRed, durationGreen, durationYellow;
+
+    // Determine which traffic light we're updating
+    
         state = &stateTrafficLight1;
         durationRed = DURATION_RED_1;
         durationGreen = DURATION_GREEN_1;
         durationYellow = DURATION_YELLOW_1;
-    }
-    else { // trafficLightID == 2
-        state = &stateTrafficLight2;
-        durationRed = DURATION_RED_2;
-        durationGreen = DURATION_GREEN_2;
-        durationYellow = DURATION_YELLOW_2;
-    }
-
-    // Increment state and wrap around if necessary
+    
+  
    
 
+    // Increment state and wrap around if necessary
+        
     // Define the brushes for the traffic light based on the current state
     HBRUSH newTopBrush, newMiddleBrush, newBottomBrush;
 
@@ -383,12 +441,10 @@ void UpdateTrafficLightState(HWND hWnd, int trafficLightID) {
     *state = *state + 1;
 
     // Delete old brushes and update global brushes
-    if (topBrush) DeleteObject(topBrush);
-    if (middleBrush) DeleteObject(middleBrush);
-    if (bottomBrush) DeleteObject(bottomBrush);
-    topBrush = newTopBrush;
-    middleBrush = newMiddleBrush;
-    bottomBrush = newBottomBrush;
+    topBrush1 = newTopBrush;
+    middleBrush1 = newMiddleBrush;
+    bottomBrush1 = newBottomBrush;
+
 
     // Reset the timer for the next state with the duration based on the current state
 
@@ -398,7 +454,8 @@ void UpdateTrafficLightState(HWND hWnd, int trafficLightID) {
 
 
 
-void tegnTrafikklys(HDC hdc, HWND hWnd,POINT position,HBRUSH topBrush,HBRUSH middleBrush,HBRUSH bottomBrush) {
+void tegnTrafikklys(HDC hdc, HWND hWnd,POINT position,HBRUSH topBrush1,HBRUSH middleBrush1,HBRUSH bottomBrush1
+    , HBRUSH topBrush2, HBRUSH middleBrush2, HBRUSH bottomBrush2) {
 
 
     RECT size;
@@ -417,28 +474,40 @@ void tegnTrafikklys(HDC hdc, HWND hWnd,POINT position,HBRUSH topBrush,HBRUSH mid
 
     //Black rectangle background
     Rectangle(hdc, position.x - left, position.y - top, position.x - right, position.y - bottom);
-    SelectObject(hdc, topBrush);
+    SelectObject(hdc, topBrush1);
     //Grey circles inside the black rectangle
     Ellipse(hdc, position.x - left + 100, position.y - top, position.x - right - 0, position.y - bottom);
-    SelectObject(hdc, middleBrush);
+    SelectObject(hdc, middleBrush1);
     Ellipse(hdc, position.x - left + 50, position.y - top, position.x - 50, position.y - bottom);
-    SelectObject(hdc, bottomBrush);
+    SelectObject(hdc, bottomBrush1);
     Ellipse(hdc, position.x - left - 0, position.y - top, position.x - 100, position.y - bottom);
 
     //TRAFIKKLYS VERTIKAL
-
     //Black rectangle background
     SelectObject(hdc, blackBrush);
     Rectangle(hdc, position.x - left + 100, position.y - top - 250, position.x - right, position.y - bottom - 50);
     //Grey circles inside the black rectangle
-    SelectObject(hdc, topBrush);
+    SelectObject(hdc, topBrush2);
     Ellipse(hdc, position.x - left + 100, position.y - top - 250, position.x - right, position.y - bottom - 150);
-    SelectObject(hdc, middleBrush);
+    SelectObject(hdc, middleBrush2);
     Ellipse(hdc, position.x - left + 100, position.y - top - 200, position.x - right, position.y - bottom - 100);
-    SelectObject(hdc, bottomBrush);
+    SelectObject(hdc, bottomBrush2);
     Ellipse(hdc, position.x - left + 100, position.y - top - 150, position.x - right, position.y - bottom - 50);
 
 
     SelectObject(hdc, hOrg);
     DeleteObject(blackBrush);
+}
+
+void UpdateCarPositions(std::vector<Car>& cars, int direction) {
+    for (auto& Car : cars) {
+        if (Car.inMove) {
+            if (direction == 0) {
+                Car.positionCar.x += 10;
+            }
+            else {
+                Car.positionCar.y += 10;
+            }
+        }
+    }
 }
