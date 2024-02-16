@@ -25,9 +25,9 @@ struct Car {
 #define MAX_LOADSTRING 100
 
 // Global Variables:
-HINSTANCE hInst;                                // current instance
-WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
-WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+HINSTANCE hInst;                                
+WCHAR szTitle[MAX_LOADSTRING];                  
+WCHAR szWindowClass[MAX_LOADSTRING];            
 
 static POINT position = { 500,500 };
 int state = 0;
@@ -152,7 +152,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_COMMAND:
     {
         int wmId = LOWORD(wParam);
-        // Parse the menu selections:
         switch (wmId)
         {
         case IDM_ABOUT:
@@ -180,20 +179,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         GetClientRect(hWnd, &size);
 
 
-        //Drawing background
+        //Tegne veien
         HBRUSH greyBrush = CreateSolidBrush(RGB(128, 128, 128));
 
         SelectObject(hdc, greyBrush);
         Rectangle(hdc, size.left, size.top, size.right, size.bottom);
 
-        //Drawing the road
+
         HBRUSH whiteBrush = CreateSolidBrush(RGB(255, 255, 255));
         SelectObject(hdc, whiteBrush);
-        //BOTTOM
+
         Rectangle(hdc, 550, 285, size.right, size.bottom);
         Rectangle(hdc, size.left, 285, 500, size.bottom);
 
-        //TOP
         Rectangle(hdc, 550, size.top, size.right, 235);
         Rectangle(hdc, size.left, size.top, 500, 235);
 
@@ -202,7 +200,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-        //CAR
+        //Bil
         HBRUSH carBrush = CreateSolidBrush(RGB(0, 0, 255));
         SelectObject(hdc, carBrush);
         for (const auto& Car : carsWest) {
@@ -213,7 +211,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             Rectangle(hdc, Car.positionCar.x - 10, Car.positionCar.y - 10, Car.positionCar.x + 10, Car.positionCar.y + 10);
         };
 
-        //Delete brushes to stop memory leak
+        //Slette børster
         DeleteObject(whiteBrush);
         DeleteObject(greyBrush);
         DeleteObject(carBrush);
@@ -229,7 +227,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         Car newCarWest = { {0,260}, true };
         carsWest.push_back(newCarWest);
         SetTimer(hWnd, ID_TIMER_CAR_MOVEMENT, 100, NULL);
-        InvalidateRect(hWnd, NULL, TRUE); // Request a repaint
+        InvalidateRect(hWnd, NULL, TRUE);
         break; }
 
 
@@ -239,7 +237,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         Car newCarNorth = { {525,10}, true };
         carsNorth.push_back(newCarNorth); 
         SetTimer(hWnd, ID_TIMER_CAR_MOVEMENT2, 100, NULL);
-        InvalidateRect(hWnd, NULL, TRUE); // Request a repaint
+        InvalidateRect(hWnd, NULL, TRUE); 
         break; }
 
     case WM_TIMER:
@@ -248,7 +246,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             UpdateTrafficLightState1(hWnd);
             UpdateTrafficLightState2(hWnd);
         }
-        // Request the window to be redrawn to reflect the traffic light state change
         void UpdateCarPositions(std::vector<Car>&cars, int direction);
         if (wParam == ID_TIMER_CAR_MOVEMENT) {
             UpdateCarPositions(carsWest, 0);  
@@ -278,7 +275,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-// Message handler for about box.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
@@ -301,13 +297,13 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 void InitializeTrafficLightBrushes() {
-    if (!topBrush1) topBrush1 = CreateSolidBrush(RGB(255, 0, 0)); // Red
-    if (!middleBrush1) middleBrush1 = CreateSolidBrush(RGB(128, 128, 128))    ; // Gray
-    if (!bottomBrush1) bottomBrush1 = CreateSolidBrush(RGB(128, 128, 128)); // Gray
+    if (!topBrush1) topBrush1 = CreateSolidBrush(RGB(255, 0, 0)); // Rød
+    if (!middleBrush1) middleBrush1 = CreateSolidBrush(RGB(128, 128, 128))    ; // Grå
+    if (!bottomBrush1) bottomBrush1 = CreateSolidBrush(RGB(128, 128, 128)); // Grå
 
-    if (!topBrush2) topBrush2 = CreateSolidBrush(RGB(128, 128, 128)); // Gray
-    if (!middleBrush2) middleBrush2 = CreateSolidBrush(RGB(128, 128, 128)); // Gray
-    if (!bottomBrush2) bottomBrush2 = CreateSolidBrush(RGB(0, 255, 0)); // Green
+    if (!topBrush2) topBrush2 = CreateSolidBrush(RGB(128, 128, 128)); // Grå
+    if (!middleBrush2) middleBrush2 = CreateSolidBrush(RGB(128, 128, 128)); // Grå
+    if (!bottomBrush2) bottomBrush2 = CreateSolidBrush(RGB(0, 255, 0)); // Grå
 }
 
 
@@ -326,7 +322,7 @@ void UpdateTrafficLightState2(HWND hWnd) {
     int* state = 0;
     int durationRed, durationGreen, durationYellow;
 
-    // Determine which traffic light we're updating
+
 
     state = &stateTrafficLight2;
     durationRed = DURATION_RED_2;
@@ -336,32 +332,29 @@ void UpdateTrafficLightState2(HWND hWnd) {
 
 
 
-    // Increment state and wrap around if necessary
-
-    // Define the brushes for the traffic light based on the current state
     HBRUSH newTopBrush, newMiddleBrush, newBottomBrush;
 
     switch (*state) {
-    case 2: // Red
+    case 2: // Rød
         newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
         stopp2 = false;
         break;
-    case 3: // Yellow / Red
+    case 3: // Gul og rød
         newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
         newMiddleBrush = CreateSolidBrush(RGB(255, 255, 0));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
         break;
 
-    case 0: //Green
+    case 0: //Grønn
         newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(0, 255, 0));
         stopp2 = true;
         break;
 
-    case 1: // Yellow
+    case 1: // Gul
         newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
         newMiddleBrush = CreateSolidBrush(RGB(255, 255, 0));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
@@ -378,15 +371,13 @@ void UpdateTrafficLightState2(HWND hWnd) {
 
     *state = *state + 1;
 
-    // Delete old brushes and update global brushes
+    // Slette gamle børster oppdater global. 
     topBrush2 = newTopBrush;
     middleBrush2 = newMiddleBrush;
     bottomBrush2 = newBottomBrush;
 
 
-    // Reset the timer for the next state with the duration based on the current state
 
-    // Invalidate the window to trigger a redraw with the new traffic light state
     InvalidateRect(hWnd, NULL, TRUE);
 }
 
@@ -396,48 +387,43 @@ void UpdateTrafficLightState1(HWND hWnd) {
     int* state = 0;
     int durationRed, durationGreen, durationYellow;
 
-    // Determine which traffic light we're updating
+    // Definer trafikklys som skal oppdateres. 
     
         state = &stateTrafficLight1;
         durationRed = DURATION_RED_1;
         durationGreen = DURATION_GREEN_1;
         durationYellow = DURATION_YELLOW_1;
-    
-  
-   
 
-    // Increment state and wrap around if necessary
-        
-    // Define the brushes for the traffic light based on the current state
+    //Definerer børstene for trafikklys
     HBRUSH newTopBrush, newMiddleBrush, newBottomBrush;
 
     switch (*state) {
-    case 0: // Red
+    case 0: // Rød
         newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
         stopp1 = false;
         break;
-    case 1: // Yellow / Red
+    case 1: // Gul og rød
         newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
         newMiddleBrush = CreateSolidBrush(RGB(255, 255, 0));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
         break;
   
-    case 2: //Green
+    case 2: //Grønn
         newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(0, 255, 0));
         stopp1 = true;
         break;
 
-    case 3: // Yellow
+    case 3: // Gul
         newTopBrush = CreateSolidBrush(RGB(128, 128, 128));
         newMiddleBrush = CreateSolidBrush(RGB(255, 255, 0));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
         break;
 
-    default: // Default to red
+    default: // Default til rød
         newTopBrush = CreateSolidBrush(RGB(255, 0, 0));
         newMiddleBrush = CreateSolidBrush(RGB(128, 128, 128));
         newBottomBrush = CreateSolidBrush(RGB(128, 128, 128));
@@ -448,15 +434,14 @@ void UpdateTrafficLightState1(HWND hWnd) {
 
     *state = *state + 1;
 
-    // Delete old brushes and update global brushes
+    // Slette gamble brushes og oppdatere globale
     topBrush1 = newTopBrush;
     middleBrush1 = newMiddleBrush;
     bottomBrush1 = newBottomBrush;
 
 
-    // Reset the timer for the next state with the duration based on the current state
 
-    // Invalidate the window to trigger a redraw with the new traffic light state
+    // Endre state på trafikklys
     InvalidateRect(hWnd, NULL, TRUE);
 }
 
@@ -480,10 +465,10 @@ void tegnTrafikklys(HDC hdc, HWND hWnd,POINT position,HBRUSH topBrush1,HBRUSH mi
 
     //TRAFIKKLYS HORISONTAL
 
-    //Black rectangle background
+    //Svart rektangel
     Rectangle(hdc, position.x - left, position.y - top, position.x - right, position.y - bottom);
     SelectObject(hdc, topBrush1);
-    //Grey circles inside the black rectangle
+    //Sirkler inni svart rektangel
     Ellipse(hdc, position.x - left + 100, position.y - top, position.x - right - 0, position.y - bottom);
     SelectObject(hdc, middleBrush1);
     Ellipse(hdc, position.x - left + 50, position.y - top, position.x - 50, position.y - bottom);
@@ -491,10 +476,10 @@ void tegnTrafikklys(HDC hdc, HWND hWnd,POINT position,HBRUSH topBrush1,HBRUSH mi
     Ellipse(hdc, position.x - left - 0, position.y - top, position.x - 100, position.y - bottom);
 
     //TRAFIKKLYS VERTIKAL
-    //Black rectangle background
+    //Svart bakgrunn
     SelectObject(hdc, blackBrush);
     Rectangle(hdc, position.x - left + 100, position.y - top - 250, position.x - right, position.y - bottom - 50);
-    //Grey circles inside the black rectangle
+    //Sirkler inni svart
     SelectObject(hdc, topBrush2);
     Ellipse(hdc, position.x - left + 100, position.y - top - 250, position.x - right, position.y - bottom - 150);
     SelectObject(hdc, middleBrush2);
